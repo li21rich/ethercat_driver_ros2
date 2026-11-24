@@ -313,7 +313,7 @@ void EcMaster::update(uint32_t domain)
 
   struct timespec t;
 
-  clock_gettime(CLOCK_REALTIME, &t);
+  clock_gettime(CLOCK_MONOTONIC, &t);  // same clock as add_slave()/activate(): mixing them breaks DC sync
   ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
   ecrt_master_sync_reference_clock(master_);
   ecrt_master_sync_slave_clocks(master_);
@@ -376,7 +376,7 @@ void EcMaster::writeData(uint32_t domain)
 
   struct timespec t;
 
-  clock_gettime(CLOCK_REALTIME, &t);
+  clock_gettime(CLOCK_MONOTONIC, &t);  // same clock as add_slave()/activate(): mixing them breaks DC sync
   ecrt_master_application_time(master_, EC_NEWTIMEVAL2NANO(t));
   ecrt_master_sync_reference_clock(master_);
   ecrt_master_sync_slave_clocks(master_);

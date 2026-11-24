@@ -117,6 +117,13 @@ protected:
   std::shared_ptr<ethercat_interface::EcMaster> master_;
   std::mutex ec_mutex_;
   bool activated_{false};
+  // Bus-loss detection (wisco): once the domain has been complete, this many consecutive
+  // incomplete cycles make read() fail, so ros2_control deactivates the hardware instead of
+  // controllers acting on the frozen process data of offline drives.
+  static constexpr int kMaxIncompleteCycles = 20;
+  bool bus_was_complete_{false};
+  int incomplete_cycles_{0};
+  bool bus_lost_{false};
 
   /** Transfer nets */
   std::vector<ethercat_interface::EcTransferNet> ec_transfer_nets_;

@@ -183,6 +183,13 @@ public:
   uint32_t getInterval() {return interval_;}
 
   virtual void readData(uint32_t domain = 0);
+
+  /** True when the last received frame had every slave's process data (working counter
+   *  complete). False while slaves are offline, e.g. after a power loss on part of the bus. */
+  bool domainComplete(uint32_t domain = 0) const
+  {
+    return domain_info_.at(domain)->domain_state.wc_state == EC_WC_COMPLETE;
+  }
   virtual void writeData(uint32_t domain = 0);
 
   /** @brief Fill in the EcTransferInfo structures

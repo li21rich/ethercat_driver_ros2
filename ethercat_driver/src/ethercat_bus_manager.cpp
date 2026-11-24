@@ -307,6 +307,9 @@ bool EthercatBusManager::activateBus()
     return false;
   }
   RCLCPP_INFO(rclcpp::get_logger("EthercatBusManager"), "Starting ...please wait...");
+  bus_was_complete_ = false;
+  incomplete_cycles_ = 0;
+  bus_lost_ = false;
 
   // setup master
   if (!setupMaster()) {
@@ -390,6 +393,19 @@ EthercatCycleResult EthercatBusManager::read()
   }
   if (activated_) {
     master_->readData();
+    if (master_->domainComplete()) {
+      bus_was_complete_ = true;
+      incomplete_cycles_ = 0;
+    } else if (bus_was_complete_ && ++incomplete_cycles_ >= kMaxIncompleteCycles) {
+      if (!bus_lost_) {
+        RCLCPP_FATAL(
+          rclcpp::get_logger("EthercatBusManager"),
+          "EtherCAT bus lost: working counter incomplete for %d cycles (slaves offline). "
+          "Stopping the hardware; drive data is no longer live.", incomplete_cycles_);
+        bus_lost_ = true;
+      }
+      return EthercatCycleResult::kError;
+    }
     return EthercatCycleResult::kCompleted;
   }
   return EthercatCycleResult::kSkippedInactive;
