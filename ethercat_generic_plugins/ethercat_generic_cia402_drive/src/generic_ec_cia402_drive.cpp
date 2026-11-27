@@ -85,8 +85,13 @@ void EcCiA402Drive::processData(size_t entry_idx, uint8_t * domain_address)
       channel.default_value =
         channel.factor * last_position_ + channel.offset;
     }
+    // The commanded target goes through in CSP and in the MyActuator PVT / MIT
+    // mode (5, vendor-specific), whose spring term uses 0x607A as p_des; in every
+    // other mode the actual position is sent so a later switch to CSP is bumpless.
+    constexpr int8_t kModeVendorPvt = 5;
     channel.override_command =
-      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION) ? true : false;
+      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION &&
+      mode_of_operation_display_ != kModeVendorPvt);
   }
 
   // setup mode of operation
